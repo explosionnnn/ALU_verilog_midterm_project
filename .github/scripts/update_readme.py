@@ -16,8 +16,14 @@ import sys
 # Git helpers
 # ---------------------------------------------------------------------------
 
+MAX_DIFF_LENGTH = 600
+MIN_README_LENGTH = 100
+
+
 def _git(*args: str) -> str:
     result = subprocess.run(["git", *args], capture_output=True, text=True)
+    if result.returncode != 0:
+        print(f"WARNING: git {' '.join(args)} exited {result.returncode}: {result.stderr.strip()}")
     return result.stdout.strip()
 
 
@@ -101,7 +107,7 @@ def build_client():
             api_key=gh_token,
         ), "gpt-4o-mini"
 
-    print("ERROR: No API key found. Set OPENAI_API_KEY or ensure GH_TOKEN is available.",
+    print("ERROR: No API key found. Set OPENAI_API_KEY, or ensure GH_TOKEN / GITHUB_TOKEN is available.",
           file=sys.stderr)
     sys.exit(1)
 
@@ -179,7 +185,7 @@ def main() -> None:
             continue
         diff = get_file_diff(f)
         if diff:
-            diffs.append(f"### {f}\n{diff[:600]}")
+            diffs.append(f"### {f}\n{diff[:MAX_DIFF_LENGTH]}")
 
     diffs_text = "\n\n".join(diffs) if diffs else "(no code changes)"
     current_readme = read_file("README.md")
@@ -198,7 +204,7 @@ def main() -> None:
 
     new_readme = strip_code_fence(new_readme)
 
-    if len(new_readme) < 100:
+    if len(new_readme) < MIN_README_LENGTH:
         print("WARNING: LLM response suspiciously short — aborting README update.")
         sys.exit(0)
 

@@ -23,8 +23,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          # Fetch enough history so we can diff HEAD~1..HEAD
-          fetch-depth: 10
+          # fetch-depth: 2 gives us HEAD and its parent, enough for HEAD~1..HEAD diffs.
+          fetch-depth: 2
 
       - name: Set up Python
         uses: actions/setup-python@v5
