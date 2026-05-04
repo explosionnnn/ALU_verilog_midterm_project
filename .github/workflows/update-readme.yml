@@ -23,7 +23,7 @@ jobs:
         id: commit
         run: |
           echo "hash=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
-          echo "date=$(date -u +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
+          echo "date=$(git log -1 --format=%cs)" >> "$GITHUB_OUTPUT"
           echo "message=$(git log -1 --pretty=%s)" >> "$GITHUB_OUTPUT"
 
       - name: Update Changelog in README.md
@@ -47,11 +47,12 @@ jobs:
               print("Entry already exists – skipping.")
               sys.exit(0)
 
-          # Insert after "## Changelog" heading; append section if missing
+          # Insert after "## Changelog" heading; consume any trailing blank lines so
+          # repeated runs don't accumulate extra blank lines between entries.
           if "## Changelog" in content:
               updated = re.sub(
-                  r"(## Changelog\n)",
-                  r"\1\n" + new_entry + "\n",
+                  r"(## Changelog\n+)",
+                  "## Changelog\n\n" + new_entry + "\n",
                   content,
                   count=1,
               )
