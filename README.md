@@ -86,6 +86,8 @@ The 6-bit `Signal` input selects the operation:
 
 ## Changelog
 
+### [2026-05-04] — Merge pull request #4 from explosionnnn/copilot/modify-readme-with-commits (`3f5a47e`)
+
 ### [2026-05-04] — Initial commit (`5e64e8b`)
 
 - Added all core RTL source files:
