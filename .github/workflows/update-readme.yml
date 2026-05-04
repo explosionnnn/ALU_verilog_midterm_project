@@ -8,6 +8,8 @@ on:
 jobs:
   update-readme:
     runs-on: ubuntu-latest
+    # Prevent the workflow from re-triggering itself after its own commit
+    if: github.actor != 'github-actions[bot]'
     permissions:
       contents: write
 
@@ -25,20 +27,15 @@ jobs:
           echo "message=$(git log -1 --pretty=%s)" >> "$GITHUB_OUTPUT"
 
       - name: Update Changelog in README.md
+        # Values are passed only through environment variables to avoid
+        # shell-injection from arbitrary commit message content.
         run: |
-          HASH="${{ steps.commit.outputs.hash }}"
-          DATE="${{ steps.commit.outputs.date }}"
-          MESSAGE="${{ steps.commit.outputs.message }}"
-
-          NEW_ENTRY="### [${DATE}] — ${MESSAGE} (\`${HASH}\`)"
-
-          # Insert new entry right after the "## Changelog" heading
           python3 - <<'PYEOF'
           import re, os, sys
 
-          hash_val  = os.environ["HASH"]
-          date_val  = os.environ["DATE"]
-          msg_val   = os.environ["MESSAGE"]
+          hash_val = os.environ["HASH"]
+          date_val = os.environ["DATE"]
+          msg_val  = os.environ["MESSAGE"]
 
           new_entry = f"### [{date_val}] — {msg_val} (`{hash_val}`)\n"
 
@@ -50,13 +47,16 @@ jobs:
               print("Entry already exists – skipping.")
               sys.exit(0)
 
-          # Insert after "## Changelog\n"
-          updated = re.sub(
-              r"(## Changelog\n)",
-              r"\1\n" + new_entry + "\n",
-              content,
-              count=1,
-          )
+          # Insert after "## Changelog" heading; append section if missing
+          if "## Changelog" in content:
+              updated = re.sub(
+                  r"(## Changelog\n)",
+                  r"\1\n" + new_entry + "\n",
+                  content,
+                  count=1,
+              )
+          else:
+              updated = content.rstrip("\n") + f"\n\n## Changelog\n\n{new_entry}\n"
 
           with open("README.md", "w") as f:
               f.write(updated)
