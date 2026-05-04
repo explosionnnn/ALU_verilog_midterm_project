@@ -1,0 +1,59 @@
+name: Auto-Update README
+
+# Fires on every push to main.
+# paths-ignore prevents re-triggering when the bot itself updates README.md.
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "README.md"
+
+permissions:
+  contents: write  # needed to push the updated README
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+
+    # Extra guard: never run when the commit was made by this bot.
+    if: ${{ github.actor != 'github-actions[bot]' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Fetch enough history so we can diff HEAD~1..HEAD
+          fetch-depth: 10
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install openai
+
+      - name: Update README with AI
+        env:
+          # GitHub Models API is accessible via the built-in GITHUB_TOKEN.
+          # No extra secret is required.  If you prefer OpenAI, add an
+          # OPENAI_API_KEY secret to the repo and the script will use it instead.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          COMMIT_SHA: ${{ github.sha }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          PUSHER_NAME: ${{ github.actor }}
+        run: python .github/scripts/update_readme.py
+
+      - name: Commit and push updated README
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add README.md
+          if ! git diff --staged --quiet; then
+            git commit -m "docs: auto-update README [skip ci]"
+            git push
+          else
+            echo "README unchanged — nothing to commit."
+          fi
