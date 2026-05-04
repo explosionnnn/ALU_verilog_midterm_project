@@ -1,0 +1,81 @@
+name: Update README on commit
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Get commit info
+        id: commit
+        run: |
+          echo "hash=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          echo "date=$(date -u +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
+          echo "message=$(git log -1 --pretty=%s)" >> "$GITHUB_OUTPUT"
+
+      - name: Update Changelog in README.md
+        run: |
+          HASH="${{ steps.commit.outputs.hash }}"
+          DATE="${{ steps.commit.outputs.date }}"
+          MESSAGE="${{ steps.commit.outputs.message }}"
+
+          NEW_ENTRY="### [${DATE}] — ${MESSAGE} (\`${HASH}\`)"
+
+          # Insert new entry right after the "## Changelog" heading
+          python3 - <<'PYEOF'
+          import re, os, sys
+
+          hash_val  = os.environ["HASH"]
+          date_val  = os.environ["DATE"]
+          msg_val   = os.environ["MESSAGE"]
+
+          new_entry = f"### [{date_val}] — {msg_val} (`{hash_val}`)\n"
+
+          with open("README.md", "r") as f:
+              content = f.read()
+
+          # Avoid duplicate entries for the same commit
+          if hash_val in content:
+              print("Entry already exists – skipping.")
+              sys.exit(0)
+
+          # Insert after "## Changelog\n"
+          updated = re.sub(
+              r"(## Changelog\n)",
+              r"\1\n" + new_entry + "\n",
+              content,
+              count=1,
+          )
+
+          with open("README.md", "w") as f:
+              f.write(updated)
+
+          print("README.md updated.")
+          PYEOF
+        env:
+          HASH: ${{ steps.commit.outputs.hash }}
+          DATE: ${{ steps.commit.outputs.date }}
+          MESSAGE: ${{ steps.commit.outputs.message }}
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "docs: update README changelog for commit ${{ steps.commit.outputs.hash }}"
+            git push
+          fi
