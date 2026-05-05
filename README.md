@@ -86,6 +86,8 @@ The 6-bit `Signal` input selects the operation:
 
 ## Changelog
 
+### [2026-05-05] — Merge branch 'main' of https://github.com/explosionnnn/ALU_verilog_midterm_project (`bba8da6`)
+
 ### [2026-05-05] — Add files via upload (`cd7d559`)
 
 ### [2026-05-04] — Add files via upload (`c224c06`)
