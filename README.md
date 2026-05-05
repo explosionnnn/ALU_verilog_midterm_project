@@ -86,6 +86,8 @@ The 6-bit `Signal` input selects the operation:
 
 ## Changelog
 
+### [2026-05-05] — Add files via upload (`cd7d559`)
+
 ### [2026-05-04] — Add files via upload (`c224c06`)
 
 ### [2026-05-04] — Merge pull request #4 from explosionnnn/copilot/modify-readme-with-commits (`3f5a47e`)
