@@ -7,15 +7,6 @@ output [5:0] SignaltoSHT ;
 output [5:0] SignaltoMUL ;
 output [5:0] SignaltoMUX ;
 
-//   Signal ( 6-bits)?
-//   AND  : 36
-//   OR   : 37
-//   ADD  : 32
-//   SUB  : 34
-//   SRL  : 2
-//   SLT  : 42
-//   DIVU : 27
-
 
 reg [5:0] temp ;
 reg [6:0] counter ;
@@ -26,9 +17,7 @@ parameter OR  = 6'b100101;
 parameter ADD = 6'b100000;
 parameter SUB = 6'b100010;
 parameter SLT = 6'b101010;
-
 parameter SRL = 6'b000010;
-
 parameter MULTU= 6'b011001;
 parameter MFHI= 6'b010000;
 parameter MFLO= 6'b010010;
