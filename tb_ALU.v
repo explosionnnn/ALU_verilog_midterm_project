@@ -1,10 +1,12 @@
 `timescale 1ns/ 1ns
 module tb_ALU();
+
 	reg clk, rst;
 	reg[5:0] ctrl;
 	reg[31:0] inputA, inputB, ans;
 	wire[31:0] out;
 	integer fp_r, fp_r_ans, eof;
+
 	initial begin
 		clk = 1'b1;
 		forever #5 clk = ~clk;
@@ -35,7 +37,6 @@ module tb_ALU();
 				$display( "%d: Div End\n", $time/10 );
 				#10;
 				#10;
-				
 				$display( "                   Move Hi" );
 				ctrl = 6'd16;
 				#10;

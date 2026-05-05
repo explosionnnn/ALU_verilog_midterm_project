@@ -1,4 +1,6 @@
+`timescale 1ns/ 1ns
 module Shifter( dataA, dataB, Signal, dataOut, reset );
+
 input reset ;
 input [31:0] dataA ;
 input [31:0] dataB ;
@@ -45,7 +47,6 @@ two_to_one_mux mux1_28 ( dataA[29], dataA[28], dataB[0], w1[28] );
 two_to_one_mux mux1_29 ( dataA[30], dataA[29], dataB[0], w1[29] );
 two_to_one_mux mux1_30 ( dataA[31], dataA[30], dataB[0], w1[30] );
 two_to_one_mux mux1_31 ( 1'b0,      dataA[31], dataB[0], w1[31] );
-
 
 two_to_one_mux mux2_0  ( dataA[2],  w1[0],  dataB[1], w2[0]  );
 two_to_one_mux mux2_1  ( dataA[3],  w1[1],  dataB[1], w2[1]  );
@@ -145,7 +146,6 @@ two_to_one_mux mux4_28 ( 1'b0     , w3[28], dataB[3], w4[28] );
 two_to_one_mux mux4_29 ( 1'b0     , w3[29], dataB[3], w4[29] );
 two_to_one_mux mux4_30 ( 1'b0     , w3[30], dataB[3], w4[30] );
 two_to_one_mux mux4_31 ( 1'b0     , w3[31], dataB[3], w4[31] );
-
 
 two_to_one_mux mux5_0  ( w4[16], w4[0],  dataB[4], w5[0]  );
 two_to_one_mux mux5_1  ( w4[17], w4[1],  dataB[4], w5[1]  );

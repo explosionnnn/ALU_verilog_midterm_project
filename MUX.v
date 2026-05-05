@@ -1,12 +1,12 @@
 `timescale 1ns/1ns
 module MUX( ALUOut, HiOut, LoOut, Shifter, Signal, dataOut );
+
 input [31:0] ALUOut ;
 input [31:0] HiOut ;
 input [31:0] LoOut ;
 input [31:0] Shifter ;
 input [5:0] Signal ;
 output [31:0] dataOut ;
-
 
 parameter AND  = 6'b100100;
 parameter OR   = 6'b100101;

@@ -1,4 +1,6 @@
+`timescale 1ns/ 1ns
 module Multiplier( clk, dataA, dataB, Signal, dataOut, reset );
+
 input clk ;
 input reset ;
 input [31:0] dataA ;
@@ -24,7 +26,6 @@ begin
     begin
         if ( multiplier_reg[0] == 1 )
             product <= product + multiplicand_reg ;
-
         multiplicand_reg <= multiplicand_reg << 1 ;
         multiplier_reg <= multiplier_reg >> 1 ;
     end
