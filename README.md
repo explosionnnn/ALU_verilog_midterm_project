@@ -86,6 +86,8 @@ The 6-bit `Signal` input selects the operation:
 
 ## Changelog
 
+### [2026-05-05] — 5/5 16:31 remove (`fde27c4`)
+
 ### [2026-05-05] — Delete unnecessary file (`4c47cac`)
 
 ### [2026-05-05] — Merge branch 'main' of https://github.com/explosionnnn/ALU_verilog_midterm_project (`7218566`)
