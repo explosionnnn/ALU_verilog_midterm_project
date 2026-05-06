@@ -14,6 +14,7 @@ parameter ADD  = 6'b100000;
 parameter SUB  = 6'b100010;
 parameter SLT  = 6'b101010;
 parameter SRL  = 6'b000010;
+parameter MULTU= 6'b011001;
 parameter MFHI = 6'b010000;
 parameter MFLO = 6'b010010;
 
@@ -23,6 +24,7 @@ assign dataOut = (Signal == AND)  ? ALUOut  :
                  (Signal == SUB)  ? ALUOut  :
                  (Signal == SLT)  ? ALUOut  :
                  (Signal == SRL)  ? Shifter :
+                 (Signal == MULTU)? LoOut   :
                  (Signal == MFHI) ? HiOut   :
                  (Signal == MFLO) ? LoOut   : 32'b0;
 

@@ -30,36 +30,20 @@ module tb_ALU();
 			else if ( ctrl == 6'd34 ) $write( "SUB(%d) ", ctrl );
 			else if ( ctrl == 6'd42 ) $write( "SLT(%d) ", ctrl );
 			else if ( ctrl == 6'd2 ) $write( "SRL(%d) ", ctrl );
-			else if ( ctrl == 6'd27 ) $write( "DIVU(%d) ", ctrl );
+			else if ( ctrl == 6'd25 ) $write( "MULTU(%d) ", ctrl );
 			$display( "%d%d", inputA, inputB  );
-			if ( ctrl == 32'd27 ) begin
+			if ( ctrl == 32'd25 ) begin
 				#330;
-				$display( "%d: Div End\n", $time/10 );
-				#10;
-				#10;
-				$display( "                   Move Hi" );
-				ctrl = 6'd16;
-				#10;
-				if ( ans == out )
-					$display( "%d: Correct: Your answer is:%d,\n                                 Correct answer is:%d\n", $time/10, out, ans );
-				else
-					$display( "%d: Wrong Answer: Your answer is:%d,\n                                             Correct answer is:%d\n", $time/10, out, ans );
-				$display( "                   Move Lo" );
-				ctrl = 6'd18;
-				eof = $fscanf(fp_r_ans, "%d", ans);
-				#10;
-				if ( ans == out )
-					$display( "%d: Correct: Your answer is:%d,\n                                 Correct answer is:%d\n", $time/10, out, ans );
-				else
-					$display( "%d: Wrong Answer: Your answer is:%d,\n                                             Correct answer is:%d\n", $time/10, out, ans );
 			end
 			else begin
 				#10;
-				if ( ans == out )
-					$display( "%d: Correct: Your answer is:%d,\n                                 Correct answer is:%d\n", $time/10, out, ans );
-				else
-					$display( "%d: Wrong Answer: Your answer is:%d,\n                                             Correct answer is:%d\n", $time/10, out, ans );
 			end
+
+			if ( ans == out )
+				$display( "%d: Correct: Your answer is:%d,\n                                 Correct answer is:%d\n", $time/10, out, ans );
+			else
+				$display( "%d: Wrong Answer: Your answer is:%d,\n                                             Correct answer is:%d\n", $time/10, out, ans );
+			
 			eof = $fscanf(fp_r_ans, "%d", ans);
 		end
 		$fclose( fp_r );
