@@ -1,9 +1,9 @@
 `timescale 1ns/1ns
-module HiLo( clk, DivAns, HiOut, LoOut, reset );
+module HiLo( clk, MulAns, HiOut, LoOut, reset );
 
 input clk ;
 input reset ;
-input [63:0] DivAns ;
+input [63:0] MulAns ;
 output [31:0] HiOut ;
 output [31:0] LoOut ;
 reg [63:0] HiLo ;
@@ -16,7 +16,7 @@ begin
   end
   else
   begin
-    HiLo = DivAns ;
+    HiLo = MulAns ;
   end
 end
 

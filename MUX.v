@@ -29,3 +29,4 @@ assign dataOut = (Signal == AND)  ? ALUOut  :
                  (Signal == MFLO) ? LoOut   : 32'b0;
 
 endmodule
+

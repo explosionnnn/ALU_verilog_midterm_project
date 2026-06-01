@@ -11,7 +11,7 @@ module tb_ALU();
 		clk = 1'b1;
 		forever #5 clk = ~clk;
 	end
-	
+
 	initial begin
 		eof = 0;
 		rst = 1'b1;
@@ -43,7 +43,7 @@ module tb_ALU();
 				$display( "%d: Correct: Your answer is:%d,\n                                 Correct answer is:%d\n", $time/10, out, ans );
 			else
 				$display( "%d: Wrong Answer: Your answer is:%d,\n                                             Correct answer is:%d\n", $time/10, out, ans );
-			
+
 			eof = $fscanf(fp_r_ans, "%d", ans);
 		end
 		$fclose( fp_r );
@@ -52,7 +52,7 @@ module tb_ALU();
 		$stop();
 	end
 
-	TotalALU alu( .clk(clk), .reset(rst), .dataA(inputA), 
+	TotalALU alu( .clk(clk), .reset(rst), .dataA(inputA),
 				  .dataB(inputB), .Signal(ctrl), .Output(out) );
 
-endmodule 
+endmodule

@@ -1,11 +1,12 @@
 `timescale 1ns/ 1ns
-module ALU( dataA, dataB, Signal, dataOut, reset );
+module ALU( dataA, dataB, Signal, dataOut, zero, reset );
 
 input  [31:0] dataA;
 input  [31:0] dataB;
 input  [5:0]  Signal;
 input         reset;
 output [31:0] dataOut;
+output        zero;
 
 parameter AND = 6'b100100;
 parameter OR  = 6'b100101;
@@ -59,5 +60,7 @@ bit_ALU alu31 ( dataA[31], dataB[31], Binvert, sel, c[31], out_w[31], c[32] );
 
 assign dataOut = reset ? 32'b0 :
                  (Signal == SLT) ? {31'b0, out_w[31]} : out_w;
+
+assign zero = ~( | out_w );
 
 endmodule
