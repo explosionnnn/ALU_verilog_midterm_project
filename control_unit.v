@@ -14,17 +14,29 @@ module control_single( opcode, funct, RegDst, ALUSrc, RegWrite,
     parameter BEQ  = 6'd4;
     parameter J    = 6'd2;
     parameter SLTI = 6'd10;
-    parameter F_JR = 6'd8;
+    parameter F_JR    = 6'd8;
+    parameter F_NOP   = 6'd0;
+    parameter F_MULTU = 6'd25;
 
     always @( opcode or funct )
     begin
         case ( opcode )
           R_FORMAT :
           begin
-            if ( funct == F_JR )
+            if ( funct == F_NOP )
+            begin
+              RegDst=1'b0; ALUSrc=1'b0; RegWrite=1'b0; MemRead=1'b0; MemWrite=1'b0;
+              Branch=1'b0; Jump=1'b0; JumpReg=1'b0; MemtoReg=1'b0; ALUOp=2'b00;
+            end
+            else if ( funct == F_JR )
             begin
               RegDst=1'b0; ALUSrc=1'b0; RegWrite=1'b0; MemRead=1'b0; MemWrite=1'b0;
               Branch=1'b0; Jump=1'b0; JumpReg=1'b1; MemtoReg=1'b0; ALUOp=2'b10;
+            end
+            else if ( funct == F_MULTU )
+            begin
+              RegDst=1'b0; ALUSrc=1'b0; RegWrite=1'b0; MemRead=1'b0; MemWrite=1'b0;
+              Branch=1'b0; Jump=1'b0; JumpReg=1'b0; MemtoReg=1'b0; ALUOp=2'b10;
             end
             else
             begin

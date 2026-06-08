@@ -7,7 +7,7 @@ input [4:0] RN1, RN2, WN ;
 input [31:0] WD ;
 output [31:0] RD1, RD2 ;
 
-reg [31:0] file_array [31:1] ;
+reg [31:0] file_array [1:31] ;
 
 always@( posedge clk )
 begin
