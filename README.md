@@ -93,6 +93,8 @@ The CPU testbenches simulate the execution of MIPS machine code from file inputs
 
 ## Changelog
 
+### [2026-06-08] — Merge pull request #7 from explosionnnn/copilot/update-readme-new-features (`d80e5d8`)
+
 ### [2026-06-08] — Merge pull request #6 from explosionnnn/kitakaaki (`54fc7f0`)
 
 ### [2026-06-08] — update project (`07c864e`)
