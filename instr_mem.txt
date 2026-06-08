@@ -1,0 +1,110 @@
+// idx0 addr0  nop
+00
+00
+00
+00
+// idx1 addr4  lw $t0,0($0)    $t0=3 (迴圈次數)
+00
+00
+08
+8C
+// idx2 addr8  lw $t1,4($0)    $t1=1 (每次減1)
+04
+00
+09
+8C
+// idx3 addr12 lw $s1,8($0)    $s1=5 (運算元)
+08
+00
+11
+8C
+// idx4 addr16 lw $s2,12($0)   $s2=2 (運算元)
+0C
+00
+12
+8C
+// idx5 addr20 lw $ra,16($0)   $ra=80 (jr目標)
+10
+00
+1F
+8C
+// idx6 addr24 and $t2,$0,$0   $t2=0 (累加器歸零)
+24
+50
+00
+00
+// idx7 addr28 LOOP: add $t2,$t2,$s1   $t2+=5
+20
+50
+51
+01
+// idx8 addr32 sub $t0,$t0,$t1         $t0-=1
+22
+40
+09
+01
+// idx9 addr36 beq $t0,$0,1    $t0==0 跳出迴圈(到 idx11)
+01
+00
+00
+11
+// idx10 addr40 j 7            跳回 LOOP(addr28)  PC往回跳!
+07
+00
+00
+08
+// idx11 addr44 or $t3,$s1,$s2  $t3=5|2=7
+25
+58
+32
+02
+// idx12 addr48 srl $t4,$s1,1   $t4=5>>1=2
+42
+60
+11
+00
+// idx13 addr52 slt $t5,$s2,$s1 $t5=(2<5)=1
+2A
+68
+51
+02
+// idx14 addr56 slti $t6,$s2,1  $t6=(2<1)=0
+01
+00
+4E
+2A
+// idx15 addr60 multu $s1,$s2   5*2=10 Hi=0 Lo=10
+19
+00
+32
+02
+// idx16 addr64 mfhi $s3        $s3=0
+10
+98
+00
+00
+// idx17 addr68 mflo $s4        $s4=10
+12
+A0
+00
+00
+// idx18 addr72 sw $t2,20($0)   Mem[20]=15
+14
+00
+0A
+AC
+// idx19 addr76 jr $ra          跳到 addr80  PC跳!
+08
+00
+E0
+03
+// idx20 addr80 sw $s4,24($0)   Mem[24]=10
+18
+00
+14
+AC
+// idx21 addr84 beq $0,$0,-1    無窮迴圈(結束)
+FF
+FF
+00
+10
