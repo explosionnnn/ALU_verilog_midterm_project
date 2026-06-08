@@ -1,56 +1,60 @@
-# ALU Verilog Midterm Project
+# MIPS Single-Cycle and Pipelined CPU (Verilog Midterm Project)
 
-A 32-bit Arithmetic Logic Unit (ALU) implemented in Verilog, supporting integer arithmetic, bitwise logic, shift, and unsigned multiplication operations.
+An evolved MIPS CPU implemented in Verilog, progressing from a 32-bit ALU to a Single-Cycle CPU, and finally to a 5-Stage Pipelined CPU with hazard detection.
 
 ## Features
 
-- **32-bit data path** built from individual 1-bit ALU slices
-- **Ripple-carry adder** for ADD and SUB (two's complement via Binvert)
-- **Bitwise AND / OR**
-- **Set-on-Less-Than (SLT)**
-- **Logical right shift (SRL)** — 5-stage barrel shifter built from 2-to-1 mux primitives
-- **Unsigned multiplication (MULTU)** — 32-cycle shift-and-add; 64-bit result stored in Hi/Lo registers (MFHI / MFLO)
-- **Synchronous reset** on all stateful components
-- **File-driven testbench** — reads `input.txt` / `ans.txt` and auto-checks every result
+- **5-Stage Pipelined Architecture**: Instruction Fetch (IF), Instruction Decode (ID), Execute (EX), Memory (MEM), and Write Back (WB) stages.
+- **Hazard Detection Unit**: Automatically stalls the pipeline to resolve data and control hazards.
+- **Single-Cycle CPU**: Complete single-cycle implementation alternative included.
+- **32-bit ALU**: Built from 1-bit ALU slices with support for Ripple-carry ADD/SUB, AND/OR, SLT, logical right shift (SRL) via barrel shifter, and 32-cycle unsigned multiplication (MULTU) with Hi/Lo registers.
+- **Supported Instructions**:
+  - **R-Type**: `ADD`, `SUB`, `AND`, `OR`, `SLT`, `SRL`, `MULTU`, `JR`
+  - **I-Type**: `LW`, `SW`, `BEQ`, `SLTI`
+  - **J-Type**: `J`
+- **Memory & Registers**: Instruction memory, Data memory, and a 32x32-bit Register File.
+- **Comprehensive Testbenches**: File-driven testbenches for the ALU (`input.txt`/`ans.txt`), Single-Cycle CPU, and Pipelined CPU (`instr_mem.txt`, `data_mem.txt`, `reg.txt`).
 
 ---
 
-## Module Hierarchy
+## Module Hierarchy (Pipelined CPU)
 
 ```
-TotalALU          ← top-level integration module
-├── ALUControl    ← decodes 6-bit Signal and routes to each sub-unit
-├── ALU           ← 32-bit logic/arithmetic (AND, OR, ADD, SUB, SLT)
-│   └── bit_ALU × 32  ← 1-bit ALU slice
-│       ├── fullAdder
-│       └── four_to_one_mux
-├── Multiplier    ← unsigned 32-bit multiplier (shift-and-add, 32 cycles)
-├── Shifter       ← 5-stage barrel shifter (SRL, built from two_to_one_mux)
-├── HiLo          ← Hi/Lo registers that store upper/lower 32 bits of product
-└── MUX           ← output selector
+pipeline_cpu      ← Top-level pipelined CPU
+├── PC            ← Program Counter
+├── memory        ← Instruction Memory (InstrMem) and Data Memory (DatMem)
+├── IF_ID         ← IF/ID Pipeline Register
+├── control_single← Main Control Unit (Decodes opcode/funct)
+├── reg_file      ← 32x32-bit Register File
+├── sign_extend   ← 16-bit to 32-bit sign extension
+├── alu_ctl       ← ALU Control Unit
+├── hazard_unit   ← Pipeline Hazard Detection Unit (Stalls)
+├── ID_EX         ← ID/EX Pipeline Register
+├── TotalALU      ← Execution Unit (ALU + Multiplier + Shifter + HiLo)
+├── EX_MEM        ← EX/MEM Pipeline Register
+└── MEM_WB        ← MEM/WB Pipeline Register
 ```
 
-### Standalone modules
+### Standalone Modules
 
-| File | Module | Description |
-|------|--------|-------------|
-| `fullAdder.v` | `fullAdder` | 1-bit full adder |
-| `four_to_one_mux.v` | `four_to_one_mux` | 1-bit 4-to-1 multiplexer |
-| `two_to_one_mux.v` | `two_to_one_mux` | 1-bit 2-to-1 multiplexer (used by Shifter) |
-| `bit_ALU.v` | `bit_ALU` | 1-bit ALU slice (AND / OR / ADD+SUB) |
-| `ALU.v` | `ALU` | 32-bit ALU (AND / OR / ADD / SUB / SLT) |
-| `Multiplier.v` | `Multiplier` | 32-cycle shift-and-add unsigned multiplier (64-bit output) |
-| `Shifter.v` | `Shifter` | 5-stage barrel shifter (SRL, up to 31-bit shift) |
-| `HiLo.v` | `HiLo` | Hi/Lo registers for upper/lower 32 bits of multiplication result |
-| `MUX.v` | `MUX` | Output selector mux |
-| `TotalALU.v` | `TotalALU` | Top-level: ALU + Multiplier + Shifter + HiLo + MUX + ALUControl |
-| `tb_ALU.v` | `tb_ALU` | File-driven testbench for `TotalALU` |
+| File | Description |
+|------|-------------|
+| `pipeline_cpu.v` | Top-level 5-stage pipelined CPU module |
+| `control_unit.v` | Decodes instructions and generates control signals |
+| `hazard_unit.v` | Detects data hazards and stalls the pipeline |
+| `IF_ID.v`, `ID_EX.v`, `EX_MEM.v`, `MEM_WB.v` | Pipeline stage registers |
+| `PC.v`, `PC_mux.v` | Program Counter and Next-PC selection |
+| `memory.v` | Instruction and Data Memory |
+| `register_file.v` | 32x32-bit Register File |
+| `TotalALU.v` | Top-level ALU wrapper (ALU, Multiplier, Shifter, HiLo) |
+| `tb_Pipeline.v` | File-driven testbench for the Pipelined CPU |
+| `tb_SingleCycle.v`| File-driven testbench for the Single-Cycle CPU |
 
 ---
 
-## Supported Operations & Signal Encoding
+## Supported Operations & Signal Encoding (ALU)
 
-The 6-bit `Signal` input selects the operation:
+The `Signal` input selects the ALU operation inside the Execute stage:
 
 | Operation | Signal (decimal) | Signal (binary) | Notes |
 |-----------|-----------------|-----------------|-------|
@@ -59,33 +63,31 @@ The 6-bit `Signal` input selects the operation:
 | ADD  | 32 | `100000` | 32-bit addition |
 | SUB  | 34 | `100010` | 32-bit subtraction (two's complement) |
 | SLT  | 42 | `101010` | Set-on-less-than; output is 0 or 1 |
-| SRL  | 2  | `000010` | Logical right shift (barrel shifter, 5-bit shift amount in dataB) |
+| SRL  | 2  | `000010` | Logical right shift (barrel shifter, 5-bit shift amount) |
 | MULTU| 25 | `011001` | Unsigned multiplication (32 cycles); 64-bit result in Hi/Lo |
-| MFHI | 16 | `010000` | Move from Hi register (upper 32 bits of product) |
-| MFLO | 18 | `010010` | Move from Lo register (lower 32 bits of product) |
 
 ---
 
-## Running the Testbench
+## Program Flow & Running the Testbenches
 
-1. Prepare **`input.txt`** — one test vector per line in the format:
+### 1. Pipelined / Single-Cycle CPU
+The CPU testbenches simulate the execution of MIPS machine code from file inputs.
 
-   ```
-   <Signal>  <InputA>  <InputB>
-   ```
-
-2. Prepare **`ans.txt`** — one expected result per line (for MULTU, provide two lines: Hi then Lo).
-
-3. Simulate with any Verilog simulator (e.g., ModelSim, Icarus Verilog):
-
+1. **Prepare Memory Files**:
+   - `instr_mem.txt`: Machine code instructions (hex format, 1 byte per line).
+   - `data_mem.txt`: Initial data memory state (hex format, 1 byte per line).
+   - `reg.txt`: Initial register file state (hex format, 32-bit words per line).
+2. **Simulate** using a Verilog simulator (e.g., Icarus Verilog):
    ```bash
-   # Icarus Verilog example
-   iverilog -o sim tb_ALU.v TotalALU.v ALUControl.v ALU.v Multiplier.v Shifter.v HiLo.v MUX.v bit_ALU.v fullAdder.v four_to_one_mux.v two_to_one_mux.v
-   vvp sim
+   # For Pipeline CPU
+   iverilog -o sim_pipe tb_Pipeline.v pipeline_cpu.v control_unit.v hazard_unit.v PC.v PC_mux.v memory.v register_file.v sign_extend.v add32.v IF_ID.v ID_EX.v EX_MEM.v MEM_WB.v TotalALU.v alu_ctl.v ALU.v Multiplier.v Shifter.v HiLo.v MUX.v bit_ALU.v fullAdder.v four_to_one_mux.v two_to_one_mux.v
+   vvp sim_pipe
    ```
+3. The testbench runs for a fixed number of cycles and dumps the final Register File and Data Memory states to the console.
 
-4. The testbench prints `Correct` or `Wrong Answer` for each test case along with the expected and actual values.
-   > **Note:** MULTU operations require 33 clock cycles (330 ns) to complete; the testbench handles this automatically.
+### 2. Standalone ALU
+1. Provide `input.txt` (test vectors) and `ans.txt` (expected results).
+2. Compile and run `tb_ALU.v` along with the core ALU files. The testbench automatically checks each result.
 
 ---
 
@@ -94,6 +96,12 @@ The 6-bit `Signal` input selects the operation:
 ### [2026-06-08] — Merge pull request #6 from explosionnnn/kitakaaki (`54fc7f0`)
 
 ### [2026-06-08] — update project (`07c864e`)
+- **Evolved project to a 5-Stage Pipelined CPU**.
+- Added Pipeline Registers (`IF_ID.v`, `ID_EX.v`, `EX_MEM.v`, `MEM_WB.v`).
+- Added Instruction Fetch components (`PC.v`, `PC_mux.v`).
+- Added Hazard Detection Unit (`hazard_unit.v`) to handle stalls.
+- Added Control Unit (`control_unit.v`) and Register File (`register_file.v`).
+- Added CPU Testbenches (`tb_Pipeline.v`, `tb_SingleCycle.v`) using `.txt` memory initialization.
 
 ### [2026-05-06] — Merge pull request #5 from explosionnnn/copilot/update-readme-newest-features (`35e59bd`)
 
@@ -105,9 +113,8 @@ The 6-bit `Signal` input selects the operation:
   - Hi/Lo registers now hold the upper and lower 32 bits of the 64-bit product
 - **Barrel shifter (Shifter.v)** — reimplemented as a 5-stage mux-tree using `two_to_one_mux` primitives; supports right-shift by 0–31 bits
 - `two_to_one_mux.v` added as a new primitive module
-- `ALUControl.v` — counter-based sequencer updated to gate 32 MULTU cycles before asserting done
+- `ALUControl.v` removed/replaced by `alu_ctl.v` and top-level logic.
 - Testbench (`tb_ALU.v`) updated: MULTU wait extended to 330 ns (33 cycles)
-- `architecture.md` added — documents top-level signal flow and module interfaces
 
 ### [2026-05-05] — 5/5 16:31 remove (`fde27c4`)
 
@@ -125,11 +132,4 @@ The 6-bit `Signal` input selects the operation:
 
 ### [2026-05-04] — Initial commit (`5e64e8b`)
 
-- Added all core RTL source files:
-  - `fullAdder.v` — 1-bit full adder primitive
-  - `four_to_one_mux.v` — 1-bit 4-to-1 mux primitive
-  - `bit_ALU.v` — 1-bit ALU slice built from the above primitives
-  - `ALU_Adder.v` — standalone 32-bit ripple-carry adder
-  - `ALU.v` — 32-bit ALU supporting AND, OR, ADD, SUB, SLT
-  - `TotalALU.v` — top-level integration (ALU + Divider + Shifter + HiLo + MUX + ALUControl) adding SRL and DIVU support
-  - `tb_ALU.v` — file-driven testbench with auto-check against answer file
+- Added all core RTL source files for the 32-bit ALU.
