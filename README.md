@@ -91,6 +91,8 @@ The 6-bit `Signal` input selects the operation:
 
 ## Changelog
 
+### [2026-06-08] — Merge pull request #6 from explosionnnn/kitakaaki (`54fc7f0`)
+
 ### [2026-06-08] — update project (`07c864e`)
 
 ### [2026-05-06] — Merge pull request #5 from explosionnnn/copilot/update-readme-newest-features (`35e59bd`)
