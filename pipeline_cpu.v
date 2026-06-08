@@ -2,17 +2,13 @@
 module pipeline_cpu( clk, rst );
 	input clk, rst;
 
-	// ===================== 所有 wire 宣告 =====================
-	// IF
 	wire [31:0] PC_addr, PC_plus4, PC_next, instr_IF;
 	wire PCWrite, IFIDWrite, Stall, IFID_Flush, MultStall, AnyStall, mult_done;
 	wire [1:0]  PCSrc;
 	wire [31:0] branch_target, jump_target;
 
-	// IF/ID
 	wire [31:0] PC4_ID, instr_ID;
 
-	// ID
 	wire [5:0]  opcode, funct;
 	wire [4:0]  rs, rt, rd, shamt;
 	wire [15:0] imm16;
@@ -27,33 +23,26 @@ module pipeline_cpu( clk, rst );
 	wire [4:0]  write_reg_ID;
 	wire beq_taken;
 
-	// ID/EX
 	wire RegWrite_EX, MemtoReg_EX, MemRead_EX, MemWrite_EX, ALUSrc_EX;
 	wire [5:0]  Signal_EX;
 	wire [31:0] rs_data_EX, rt_data_EX, signext_EX;
 	wire [4:0]  shamt_EX, write_reg_EX;
 
-	// EX
 	wire [31:0] alu_in2, talu_dataA, talu_dataB, talu_out;
 	wire is_srl;
 
-	// EX/MEM
 	wire RegWrite_MEM, MemtoReg_MEM, MemRead_MEM, MemWrite_MEM;
 	wire [31:0] alu_result_MEM, rt_data_MEM;
 	wire [4:0]  write_reg_MEM;
 
-	// MEM
 	wire [31:0] mem_read_data;
 
-	// MEM/WB
 	wire RegWrite_WB, MemtoReg_WB;
 	wire [31:0] mem_data_WB, alu_result_WB;
 	wire [4:0]  write_reg_WB;
 
-	// WB
 	wire [31:0] reg_write_data;
 
-	// ===================== IF 階段 =====================
 	assign MultStall  = ( Signal_EX == 6'b011001 ) & ~mult_done;
 	assign AnyStall   = Stall | MultStall;
 	assign PCWrite    = ~AnyStall;
@@ -71,12 +60,10 @@ module pipeline_cpu( clk, rst );
 	              .Jump_addr(jump_target), .JR_addr(rs_data),
 	              .PCSrc(PCSrc), .PC_next(PC_next) );
 
-	// ===================== IF/ID =====================
 	IF_ID ifid( .clk(clk), .reset(rst), .IFIDWrite(IFIDWrite), .Flush(IFID_Flush),
 	            .PC4_in(PC_plus4), .instr_in(instr_IF),
 	            .PC4_out(PC4_ID), .instr_out(instr_ID) );
 
-	// ===================== ID 階段 =====================
 	assign opcode     = instr_ID[31:26];
 	assign rs         = instr_ID[25:21];
 	assign rt         = instr_ID[20:16];
@@ -117,7 +104,6 @@ module pipeline_cpu( clk, rst );
 	                 .MEMWB_RegWrite(RegWrite_WB), .MEMWB_wreg(write_reg_WB),
 	                 .Stall(Stall) );
 
-	// ===================== ID/EX =====================
 	ID_EX idex( .clk(clk), .reset(rst), .Flush(Stall), .Hold(MultStall),
 	            .RegWrite_in(RegWrite_ID), .MemtoReg_in(MemtoReg_ID), .MemRead_in(MemRead_ID),
 	            .MemWrite_in(MemWrite_ID), .ALUSrc_in(ALUSrc_ID), .Signal_in(Signal_ID),
@@ -128,7 +114,6 @@ module pipeline_cpu( clk, rst );
 	            .rs_data_out(rs_data_EX), .rt_data_out(rt_data_EX), .signext_out(signext_EX),
 	            .shamt_out(shamt_EX), .write_reg_out(write_reg_EX) );
 
-	// ===================== EX 階段 =====================
 	assign alu_in2    = ALUSrc_EX ? signext_EX : rt_data_EX;
 	assign is_srl     = ( Signal_EX == 6'b000010 );
 	assign talu_dataA = is_srl ? rt_data_EX          : rs_data_EX;
@@ -137,7 +122,6 @@ module pipeline_cpu( clk, rst );
 	TotalALU TALU( .clk(clk), .dataA(talu_dataA), .dataB(talu_dataB), .Signal(Signal_EX),
 	               .Output(talu_out), .mult_done(mult_done), .reset(rst) );
 
-	// ===================== EX/MEM =====================
 	EX_MEM exmem( .clk(clk), .reset(rst),
 	              .RegWrite_in(RegWrite_EX), .MemtoReg_in(MemtoReg_EX), .MemRead_in(MemRead_EX),
 	              .MemWrite_in(MemWrite_EX),
@@ -146,18 +130,15 @@ module pipeline_cpu( clk, rst );
 	              .MemWrite_out(MemWrite_MEM),
 	              .alu_result_out(alu_result_MEM), .rt_data_out(rt_data_MEM), .write_reg_out(write_reg_MEM) );
 
-	// ===================== MEM 階段 =====================
 	memory DatMem( .clk(clk), .MemRead(MemRead_MEM), .MemWrite(MemWrite_MEM), .wd(rt_data_MEM),
 	               .addr(alu_result_MEM), .rd(mem_read_data) );
 
-	// ===================== MEM/WB =====================
 	MEM_WB memwb( .clk(clk), .reset(rst),
 	              .RegWrite_in(RegWrite_MEM), .MemtoReg_in(MemtoReg_MEM),
 	              .mem_data_in(mem_read_data), .alu_result_in(alu_result_MEM), .write_reg_in(write_reg_MEM),
 	              .RegWrite_out(RegWrite_WB), .MemtoReg_out(MemtoReg_WB),
 	              .mem_data_out(mem_data_WB), .alu_result_out(alu_result_WB), .write_reg_out(write_reg_WB) );
 
-	// ===================== WB 階段 =====================
 	assign reg_write_data = MemtoReg_WB ? mem_data_WB : alu_result_WB;
 
 endmodule

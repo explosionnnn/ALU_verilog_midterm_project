@@ -1,2 +1,6 @@
 *.txt
 /alu
+*.md
+!README.md
+*.html
+*.Identifier
