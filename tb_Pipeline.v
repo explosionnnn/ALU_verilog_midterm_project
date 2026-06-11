@@ -5,6 +5,116 @@ module tb_Pipeline();
 	reg [31:0] result_data;
 	reg [31:0] PC_EX, PC_MEM, PC_WB;
 
+	wire [31:0] w_PC_IF;
+	wire [31:0] w_instr_IF;
+
+	wire [31:0] w_PC4_IFID;
+	wire [31:0] w_instr_IFID;
+
+	wire [31:0] w_rsData_IDEX;
+	wire [31:0] w_rtData_IDEX;
+	wire [5:0]  w_Signal_IDEX;
+	wire [4:0]  w_wrReg_IDEX;
+	wire        w_RegWrite_IDEX;
+	wire        w_MemRead_IDEX;
+	wire        w_MemWrite_IDEX;
+
+	wire [31:0] w_aluResult_EXMEM;
+	wire [31:0] w_rtData_EXMEM;
+	wire [4:0]  w_wrReg_EXMEM;
+	wire        w_RegWrite_EXMEM;
+	wire        w_MemRead_EXMEM;
+	wire        w_MemWrite_EXMEM;
+
+	wire [31:0] w_memData_MEMWB;
+	wire [31:0] w_aluResult_MEMWB;
+	wire [4:0]  w_wrReg_MEMWB;
+	wire        w_RegWrite_MEMWB;
+	wire        w_MemtoReg_MEMWB;
+
+	wire        w_RegWrite_WB;
+	wire [4:0]  w_wrReg_WB;
+	wire [31:0] w_wrData_WB;
+
+	wire        w_MemRead_MEM;
+	wire        w_MemWrite_MEM;
+	wire [31:0] w_mem_addr;
+	wire [31:0] w_mem_wdata;
+	wire [31:0] w_mem_rdata;
+
+	wire [31:0] w_HI;
+	wire [31:0] w_LO;
+	wire        w_HiLoWrite;
+
+	wire [1:0]  w_PCSrc;
+	wire        w_beq_taken;
+	wire        w_Branch;
+	wire        w_Jump;
+	wire        w_JumpReg;
+	wire [31:0] w_branch_target;
+	wire [31:0] w_jump_target;
+	wire [31:0] w_PC_next;
+
+	wire        w_AnyStall;
+	wire        w_Stall;
+	wire        w_MultStall;
+	wire        w_mult_done;
+
+	assign w_PC_IF           = CPU.PC_addr;
+	assign w_instr_IF        = CPU.instr_IF;
+
+	assign w_PC4_IFID        = CPU.PC4_ID;
+	assign w_instr_IFID      = CPU.instr_ID;
+
+	assign w_rsData_IDEX     = CPU.rs_data_EX;
+	assign w_rtData_IDEX     = CPU.rt_data_EX;
+	assign w_Signal_IDEX     = CPU.Signal_EX;
+	assign w_wrReg_IDEX      = CPU.write_reg_EX;
+	assign w_RegWrite_IDEX   = CPU.RegWrite_EX;
+	assign w_MemRead_IDEX    = CPU.MemRead_EX;
+	assign w_MemWrite_IDEX   = CPU.MemWrite_EX;
+
+	assign w_aluResult_EXMEM = CPU.alu_result_MEM;
+	assign w_rtData_EXMEM    = CPU.rt_data_MEM;
+	assign w_wrReg_EXMEM     = CPU.write_reg_MEM;
+	assign w_RegWrite_EXMEM  = CPU.RegWrite_MEM;
+	assign w_MemRead_EXMEM   = CPU.MemRead_MEM;
+	assign w_MemWrite_EXMEM  = CPU.MemWrite_MEM;
+
+	assign w_memData_MEMWB   = CPU.mem_data_WB;
+	assign w_aluResult_MEMWB = CPU.alu_result_WB;
+	assign w_wrReg_MEMWB     = CPU.write_reg_WB;
+	assign w_RegWrite_MEMWB  = CPU.RegWrite_WB;
+	assign w_MemtoReg_MEMWB  = CPU.MemtoReg_WB;
+
+	assign w_RegWrite_WB     = CPU.RegWrite_WB;
+	assign w_wrReg_WB        = CPU.write_reg_WB;
+	assign w_wrData_WB       = CPU.reg_write_data;
+
+	assign w_MemRead_MEM     = CPU.MemRead_MEM;
+	assign w_MemWrite_MEM    = CPU.MemWrite_MEM;
+	assign w_mem_addr        = CPU.alu_result_MEM;
+	assign w_mem_wdata       = CPU.rt_data_MEM;
+	assign w_mem_rdata       = CPU.mem_read_data;
+
+	assign w_HI              = CPU.TALU.HiLo.HiOut;
+	assign w_LO              = CPU.TALU.HiLo.LoOut;
+	assign w_HiLoWrite       = CPU.TALU.HiLo.HiLoWrite;
+
+	assign w_PCSrc           = CPU.PCSrc;
+	assign w_beq_taken       = CPU.beq_taken;
+	assign w_Branch          = CPU.Branch_ID;
+	assign w_Jump            = CPU.Jump_ID;
+	assign w_JumpReg         = CPU.JumpReg_ID;
+	assign w_branch_target   = CPU.branch_target;
+	assign w_jump_target     = CPU.jump_target;
+	assign w_PC_next         = CPU.PC_next;
+
+	assign w_AnyStall        = CPU.AnyStall;
+	assign w_Stall           = CPU.Stall;
+	assign w_MultStall       = CPU.MultStall;
+	assign w_mult_done       = CPU.mult_done;
+
 	initial begin
 		clk = 1;
 		forever #5 clk = ~clk;
@@ -23,6 +133,9 @@ module tb_Pipeline();
 	end
 
 	initial begin
+		$dumpfile("pipeline.vcd");
+		$dumpvars(0, tb_Pipeline);
+
 		for ( i = 0; i < 1024; i = i + 1 )
 		begin
 			CPU.InstrMem.mem_array[i] = 8'h00;
@@ -124,6 +237,9 @@ module tb_Pipeline();
 			else
 				$display( "  WB  | NOP/bubble" );
 
+			$display( "  HI=%0d  LO=%0d  HiLoWr=%0d", w_HI, w_LO, w_HiLoWrite );
+			$display( "  PCSrc=%0d  beq=%0d  branch_tgt=%0d  jump_tgt=%0d  PC_next=%0d",
+			          w_PCSrc, w_beq_taken, w_branch_target, w_jump_target, w_PC_next );
 			$display( "" );
 		end
 	end
